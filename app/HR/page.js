@@ -4,6 +4,8 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Box, Button, TextField, Typography, Checkbox, FormControlLabel } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton } from "@mui/material";
 
 export default function HR() {
   const { status } = useSession();
@@ -13,6 +15,7 @@ export default function HR() {
   const [joiningDate, setJoiningDate] = useState("");
   const [salary, setSalary] = useState("");
   const [isActive, setIsActive] = useState(false);
+  const [salaryError, setSalaryError] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,7 +29,7 @@ export default function HR() {
   };
 
   const handleCreate = () => {
-    if (name && designation && joiningDate && salary) {
+    if (name && designation && joiningDate && salary && !salaryError) {
       const newRecord = { 
         id: data.length + 1, 
         name, 
@@ -36,17 +39,29 @@ export default function HR() {
         isActive: isActive ? "Yes" : "No" 
       };
 
-      setData((prevData) => {
-        const updatedData = [...prevData, newRecord];
-        console.log("Updated Data:", updatedData); 
-        return updatedData;
-      });
+      setData((prevData) => [...prevData, newRecord]);
 
       setName(""); 
       setDesignation("");
       setJoiningDate("");
       setSalary("");
-      setIsActive(false); 
+      setIsActive(false);
+    }
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this record?")) {
+      setData((prevData) => prevData.filter((row) => row.id !== id));
+    }
+  };
+
+  const handleSalaryChange = (e) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setSalary(value);
+      setSalaryError(false);
+    } else {
+      setSalaryError(true);
     }
   };
 
@@ -56,7 +71,24 @@ export default function HR() {
     { field: "designation", headerName: "Designation", width: 200 },
     { field: "joiningDate", headerName: "Joining Date", width: 200 },
     { field: "salary", headerName: "Salary", width: 150 },
-    { field: "isActive", headerName: "Is Active", width: 150 },
+    { 
+      field: "isActive", 
+      headerName: "Is Active", 
+      width: 150,
+      renderCell: (params) => (
+        <Checkbox checked={params.value === "Yes"} disabled />
+      )
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      renderCell: (params) => (
+        <IconButton onClick={() => handleDelete(params.row.id)} color="error">
+          <DeleteIcon />
+        </IconButton>
+      ),
+    },
   ];
 
   if (status === "loading") return <p>Loading...</p>;
@@ -93,16 +125,18 @@ export default function HR() {
         fullWidth
         sx={{ marginBottom: 2 }}
         InputLabelProps={{
-          shrink: true, 
+          shrink: true,
         }}
       />
       <TextField
         label="Salary"
         value={salary}
-        onChange={(e) => setSalary(e.target.value)}
+        onChange={handleSalaryChange}
         fullWidth
         sx={{ marginBottom: 2 }}
-        type="number"
+        type="text"
+        error={salaryError}
+        helperText={salaryError ? "Salary must be a numeric value" : ""}
       />
       <FormControlLabel
         control={
@@ -123,6 +157,7 @@ export default function HR() {
       >
         Create
       </Button>
+
       <Box sx={{ height: 400, width: "100%" }}>
         <DataGrid rows={data} columns={columns} pageSize={5} />
       </Box>
