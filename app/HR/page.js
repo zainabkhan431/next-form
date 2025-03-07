@@ -2,10 +2,19 @@
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Box, Button, TextField, Typography, Checkbox, FormControlLabel } from "@mui/material";
+import { Box, Button, TextField, Typography, Checkbox, FormControlLabel, IconButton, ThemeProvider, createTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton } from "@mui/material";
+
+const darkTheme = createTheme({
+  palette: {
+    mode: "dark",
+    primary: { main: "#90caf9" },
+    secondary: { main: "#f48fb1" },
+    background: { default: "#121212", paper: "#1e1e1e" },
+    text: { primary: "#fff", secondary: "#bbb" },
+  },
+});
 
 export default function HR() {
   const { status } = useSession();
@@ -94,73 +103,85 @@ export default function HR() {
   if (status === "loading") return <p>Loading...</p>;
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Button onClick={handleLogout} sx={{ marginBottom: 2 }}>
-        Logout
-      </Button>
+    <ThemeProvider theme={darkTheme}>
+      <Box sx={{ p: 3, backgroundColor: "background.default", minHeight: "100vh", color: "text.primary" }}>
+        <Button onClick={handleLogout} sx={{ marginBottom: 2 }} variant="contained" color="secondary">
+          Logout
+        </Button>
 
-      <Typography variant="h4" gutterBottom>
-        HR Page
-      </Typography>
+        <Typography variant="h4" gutterBottom>
+          HR Page
+        </Typography>
 
-      <TextField
-        label="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        label="Designation"
-        value={designation}
-        onChange={(e) => setDesignation(e.target.value)}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        label="Joining Date"
-        type="date"
-        value={joiningDate}
-        onChange={(e) => setJoiningDate(e.target.value)}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-      <TextField
-        label="Salary"
-        value={salary}
-        onChange={handleSalaryChange}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-        type="text"
-        error={salaryError}
-        helperText={salaryError ? "Salary must be a numeric value" : ""}
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
-            name="isActive"
-            color="primary"
-          />
-        }
-        label="Is Active"
-      />
+        <TextField
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          fullWidth
+          sx={{ marginBottom: 2 }}
+          InputLabelProps={{ style: { color: "#fff" } }}
+        />
+        <TextField
+          label="Designation"
+          value={designation}
+          onChange={(e) => setDesignation(e.target.value)}
+          fullWidth
+          sx={{ marginBottom: 2 }}
+          InputLabelProps={{ style: { color: "#fff" } }}
+        />
 
-      <Button
-        onClick={handleCreate}
-        variant="contained"
-        sx={{ marginBottom: 2 }}
-      >
-        Create
-      </Button>
+        {/* Native Date Input */}
+        <Typography variant="body1" sx={{ marginBottom: 1 }}>
+          Joining Date:
+        </Typography>
+        <input 
+  type="date" 
+  value={joiningDate} 
+  onChange={(e) => setJoiningDate(e.target.value)} 
+  style={{
+    padding: "10px",
+    borderRadius: "8px",
+    border: "1px solid #555",
+    backgroundColor: "#1e1e1e",
+    color: "#fff",
+    cursor: "pointer"
+  }} 
+/>
+        <TextField
+          label="Salary"
+          value={salary}
+          onChange={handleSalaryChange}
+          fullWidth
+          sx={{ marginBottom: 2 }}
+          type="text"
+          error={salaryError}
+          helperText={salaryError ? "Salary must be a numeric value" : ""}
+          InputLabelProps={{ style: { color: "#fff" } }}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              name="isActive"
+              color="primary"
+            />
+          }
+          label="Is Active"
+        />
 
-      <Box sx={{ height: 400, width: "100%" }}>
-        <DataGrid rows={data} columns={columns} pageSize={5} />
+        <Button
+          onClick={handleCreate}
+          variant="contained"
+          sx={{ marginBottom: 2 }}
+        >
+          Create
+        </Button>
+
+        <Box sx={{ height: 400, width: "100%" }}>
+          <DataGrid rows={data} columns={columns} pageSize={5} />
+        </Box>
       </Box>
-    </Box>
+    </ThemeProvider>
   );
 }
